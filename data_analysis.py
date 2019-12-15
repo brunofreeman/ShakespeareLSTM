@@ -20,7 +20,7 @@ word_counts = dict()
 for word in words: #create a dict mapping word to count
     word_counts[word] = word_counts.get(word, 0) + 1
 
-word_counts = sorted(list(word_counts.items()), key=lambda x: (-x[1], x[0])) #convert dict to list of tuples sort by count then word
+word_counts = sorted(list(word_counts.items()), key=lambda i: (-i[1], i[0])) #convert dict to list of tuples sort by count then word
 
 total_words = 0
 total_top_words = 0
@@ -58,7 +58,7 @@ if num_top_words_with_unk > num_top_words:
 output += "%6s%16s%10s\n" % ("Rank:", "Word:", "Count:")
 output += "--------------------------------"
 
-word_counts.sort(key=lambda x: (-x[1], x[0])) #resort for <UNK>
+word_counts.sort(key=lambda i: (-i[1], i[0])) #resort for <UNK>
 
 for i in range(0, num_top_words_with_unk):
     w = word_counts[i][0];
