@@ -1,6 +1,5 @@
 import os
 import re
-import operator
 
 PRINT_TO_FILE = True
 MIN_COUNT = 50
@@ -21,12 +20,12 @@ word_counts = dict()
 for word in words: #create a dict mapping word to count
     word_counts[word] = word_counts.get(word, 0) + 1
 
-word_counts = sorted(list(word_counts.items()), key = operator.itemgetter(1)) #convert dict to list of tuples sort by count then word
+word_counts = sorted(list(word_counts.items()), key=lambda x: (-x[1], x[0])) #convert dict to list of tuples sort by count then word
 
 total_words = 0
 total_top_words = 0
 num_top_words = 0
-for i in range(len(word_counts) - 1, -1, -1):
+for i in range(0, len(word_counts)):
     total_words += word_counts[i][1]
     if word_counts[i][1] >= MIN_COUNT:
         num_top_words += 1
@@ -42,14 +41,14 @@ output += "%.1f%% of unique, %.1f%% of total\n\n" % (unique_percent, total_perce
 output += "%6s%16s%10s\n" % ("Rank:", "Word:", "Count:")
 output += "--------------------------------"
 
-for i in range(len(word_counts) - 1, len(word_counts) - 1 - num_top_words, -1):
+for i in range(0, num_top_words):
     w = word_counts[i][0];
     if w == "\n":
         w = "<NEWLINE>"
     elif w == "\t":
         w = "<TAB>"
     elif w == " ":
-        w = "<SPACE>"
+        w = "<SAPCE>"
     output += "\n%5d)%16s%10d" % (len(word_counts) - i, w, word_counts[i][1])
 
 if PRINT_TO_FILE:
