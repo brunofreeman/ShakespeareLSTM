@@ -3,11 +3,13 @@ import re
 import operator
 
 PRINT_TO_FILE = True
-MIN_COUNT = 100
+MIN_COUNT = 50
 
+file_count = 0
 text = ""
 for file in os.listdir("./shakespeare_data"):
     if file.endswith(".txt"):
+        file_count += 1
         text += open(os.path.join("./shakespeare_data", file)).read().lower()
 
 word_regex = "(?:[A-Za-z\']*(?:(?<!-)-(?!-))*[A-Za-z\']+)+"
@@ -33,8 +35,10 @@ for i in range(len(word_counts) - 1, -1, -1):
 unique_percent = float(num_top_words) / len(word_counts) * 100
 total_percent = float(total_top_words) / total_words * 100
 
-output = ("%d unique words\n%d total words\n\nShowing words with count >= %d (top %d)\n%.1f%% of unique, %.1f%% of total\n\n"
-    % (len(word_counts), total_words, MIN_COUNT, num_top_words, unique_percent, total_percent))
+output = "%d files analyzed\n\n" % file_count
+output += "%d unique words\n%d total words\n\n" % (len(word_counts), total_words)
+output += "Showing words with count >= %d (top %d)\n" % (MIN_COUNT, num_top_words)
+output += "%.1f%% of unique, %.1f%% of total\n\n" % (unique_percent, total_percent)
 output += "%6s%16s%10s\n" % ("Rank:", "Word:", "Count:")
 output += "--------------------------------"
 
