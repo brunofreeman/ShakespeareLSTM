@@ -31,25 +31,44 @@ for i in range(0, len(word_counts)):
         num_top_words += 1
         total_top_words += word_counts[i][1]
 
-unique_percent = float(num_top_words) / len(word_counts) * 100
+pre_unk_len = len(word_counts)
+
+less_than_min = 0
+for i in range(len(word_counts) - 1, -1, -1):
+    if word_counts[i][1] < MIN_COUNT:
+        less_than_min += word_counts[i][1]
+        del word_counts[i]
+
+word_counts.append(("<UNK>", less_than_min))
+
+num_top_words_with_unk = num_top_words
+if less_than_min >= MIN_COUNT:
+    num_top_words_with_unk += 1
+
+unique_percent = float(num_top_words) / pre_unk_len * 100
 total_percent = float(total_top_words) / total_words * 100
 
 output = "%d files analyzed\n\n" % file_count
-output += "%d unique words\n%d total words\n\n" % (len(word_counts), total_words)
+output += "%d unique words\n%d total words\n\n" % (pre_unk_len, total_words)
 output += "Showing words with count >= %d (top %d)\n" % (MIN_COUNT, num_top_words)
 output += "%.1f%% of unique, %.1f%% of total\n\n" % (unique_percent, total_percent)
+if num_top_words_with_unk > num_top_words:
+    output += "Sum of counts of non-top words included under <UNK>\n"
+    output += "<UNK> not included in stats, but is ranked\n\n"
 output += "%6s%16s%10s\n" % ("Rank:", "Word:", "Count:")
 output += "--------------------------------"
 
-for i in range(0, num_top_words):
+word_counts.sort(key=lambda x: (-x[1], x[0])) #resort for <UNK>
+
+for i in range(0, num_top_words_with_unk):
     w = word_counts[i][0];
     if w == "\n":
-        w = "<NEWLINE>"
+        w = "<NLN>"
     elif w == "\t":
         w = "<TAB>"
     elif w == " ":
-        w = "<SAPCE>"
-    output += "\n%5d)%16s%10d" % (len(word_counts) - i, w, word_counts[i][1])
+        w = "<SPC>"
+    output += "\n%5d)%16s%10d" % (i + 1, w, word_counts[i][1])
 
 if PRINT_TO_FILE:
     with open("./data_analysis.txt", "w") as output_file:
