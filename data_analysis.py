@@ -45,8 +45,8 @@ num_top_words_with_unk = num_top_words
 if less_than_min >= MIN_COUNT:
     num_top_words_with_unk += 1
 
-unique_percent = float(num_top_words) / pre_unk_len * 100
-total_percent = float(total_top_words) / total_words * 100
+unique_percent = num_top_words / pre_unk_len * 100
+total_percent = total_top_words / total_words * 100
 
 output = "%d files analyzed\n\n" % file_count
 output += "%d unique words\n%d total words\n\n" % (pre_unk_len, total_words)
