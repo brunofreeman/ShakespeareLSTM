@@ -67,7 +67,7 @@ output += "--------------------------------"
 word_counts.sort(key=lambda i: (-i[1], i[0])) #resort for <UNK>
 
 for i in range(0, num_top_words_with_unk):
-    w = word_counts[i][0];
+    w = word_counts[i][0]
     if w == "\n":
         w = "<NLN>"
     elif w == "\t":

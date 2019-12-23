@@ -4,9 +4,10 @@ import os
 import re
 import datetime
 
-#Settings
+#Data Settings
 MIN_WORD_COUNT = 50
 
+#Training Settings
 BATCH_SIZE = 64
 BUFFER_SIZE = 10000
 EMBEDDING_DIM = 256
@@ -16,17 +17,21 @@ RNN_UNITS = 1024
 PATIENCE = 10
 TRAIN_PERCENT = 0.9
 
-DATA_DIR = os.path.join(".", "shakespeare_data")
-CKPT_DIR = os.path.join(".", "checkpoints")
-OUTPUT_DIR = os.path.join(".", "lstm_output")
-
+#File Settings
+ROOT = "."
+DATA_DIR = os.path.join(ROOT, "shakespeare_data")
+CKPT_DIR = os.path.join(ROOT, "checkpoints")
+OUTPUT_DIR = os.path.join(ROOT, "lstm_output")
 def get_time_for_file():
     return datetime.datetime.now().strftime("_%m.%d.%y-%H:%M:%S")
-
 def get_ckpt_prefix():
     return os.path.join(CKPT_DIR, "ckpt" + get_time_for_file())
-
 PRINT_TO_FILE = True
+
+#Generation Settings
+SEED = "a great tale"
+NUM_WORDS_GENERATE = 1000
+TEMPERATURE = 1.0
 
 text = ""
 for file in os.listdir(DATA_DIR):
@@ -120,18 +125,16 @@ def train_model():
     print("Training stopped due to no improvement after %d epochs" % PATIENCE)
 
 def generate_text(model, seed):
-    seed = seed.split(" ");
-    num_generate = 1000
+    seed = re.findall(regex, seed)
     input_eval = [word2int[s] for s in seed]
     input_eval = tf.expand_dims(input_eval, 0)
     text_generated = []
-    temperature = 1.0
     model.reset_states()
 
-    for i in range(num_generate):
+    for i in range(NUM_WORDS_GENERATE):
         predictions = model(input_eval)
         predictions = tf.squeeze(predictions, 0)
-        predictions = predictions / temperature
+        predictions = predictions / TEMPERATURE
         predicted_id = tf.random.categorical(predictions, num_samples=1)[-1,0].numpy()
         input_eval = tf.expand_dims([predicted_id], 0)
         text_generated.append(int2word[predicted_id])
@@ -151,4 +154,4 @@ def run_model(seed):
     else:
         print(output)
 
-run_model("thou are a")
+run_model(SEED)
