@@ -1,20 +1,40 @@
-import tensorflow as tf
+import tensorflow as tf #2.0.0
 import numpy as np
 import os
 import re
 import datetime
 
-MIN_COUNT = 50
+#Settings
+MIN_WORD_COUNT = 50
 
-file_count = 0
+BATCH_SIZE = 64
+BUFFER_SIZE = 10000
+EMBEDDING_DIM = 256
+EPOCHS = 50
+SEQ_LEN = 200
+RNN_UNITS = 1024
+PATIENCE = 10
+TRAIN_PERCENT = 0.9
+
+DATA_DIR = os.path.join(".", "shakespeare_data")
+CKPT_DIR = os.path.join(".", "checkpoints")
+OUTPUT_DIR = os.path.join(".", "lstm_output")
+
+def get_time_for_file():
+    return datetime.datetime.now().strftime("_%m.%d.%y-%H:%M:%S")
+
+def get_ckpt_prefix():
+    return os.path.join(CKPT_DIR, "ckpt" + get_time_for_file())
+
+PRINT_TO_FILE = True
+
 text = ""
-for file in os.listdir("./shakespeare_data"):
+for file in os.listdir(DATA_DIR):
     if file.endswith(".txt"):
-        file_count += 1
-        text += open(os.path.join("./shakespeare_data", file)).read().lower()
+        text += open(os.path.join(DATA_DIR, file)).read().lower()
 
 word_regex = "(?:[A-Za-z\']*(?:(?<!-)-(?!-))*[A-Za-z\']+)+"
-punct_regex = "|\.|\?|!|,|;|:|-|\(|\)|\[|\]|\{|\}|\'|\"|\\|\/|<|>| |\t|\n"
+punct_regex = r"|\.|\?|!|,|;|:|-|\(|\)|\[|\]|\{|\}|\'|\"|\|\/|<|>| |\t|\n"
 regex = word_regex + punct_regex
 words = re.findall(regex, text)
 word_counts = dict()
@@ -26,69 +46,109 @@ word_counts = sorted(list(word_counts.items()), key=lambda i: (-i[1], i[0])) #co
 
 less_than_min = 0
 for i in range(len(word_counts) - 1, -1, -1):
-    if word_counts[i][1] < MIN_COUNT:
+    if word_counts[i][1] < MIN_WORD_COUNT:
         less_than_min += word_counts[i][1]
         del word_counts[i]
 
 word_counts.append(("<UNK>", less_than_min))
 word_counts.sort(key=lambda i: (-i[1], i[0])) #resort for <UNK>
 
-#https://towardsdatascience.com/generating-text-with-tensorflow-2-0-6a65c7bdc568
-
 vocab = [i[0] for i in word_counts] #list of all words
 words = [w if w in vocab else "<UNK>" for w in words] #sets words not in vocab to <UNK>
 
 word2int = {w:i for i, w in enumerate(vocab)}
 int2word = np.array(vocab)
-#print("Vector:\n")
-#for word,_ in zip(word2int, range(len(vocab))):
-#    print(" {:4s}: {:3d},".format(repr(word), word2int[word]))
 
 words_as_ints = np.array([word2int[w] for w in words], dtype=np.int32)
-#print("{}\n mapped to integers:\n {}".format(repr(words[:100]), words_as_ints[:100]))
-
-batch_size = 64
-buffer_size = 10000
-embedding_dim = 256
-epochs = 50
-seq_length = 200
-examples_per_epoch = len(words) // seq_length
-#lr = 0.001 #will use default for Adam optimizer
-rnn_units = 1024
-
-train_size = 0
-while (train_size <= 0.9 * len(words_as_ints) - batch_size):
-    train_size += batch_size
-
-train_words = words_as_ints[:train_size]
-test_words = words_as_ints[train_size:]
-#print(words_as_ints.shape, train_words.shape, test_words.shape)
-
-train_word_dataset = tf.data.Dataset.from_tensor_slices(train_words)
-test_word_dataset = tf.data.Dataset.from_tensor_slices(test_words)
-
-train_sequences = train_word_dataset.batch(seq_length + 1, drop_remainder=True)
-test_sequences = test_word_dataset.batch(seq_length + 1, drop_remainder=True)
 
 def split_input_target(chunk):
     input_words = chunk[:-1]
     target_words = chunk[1:]
     return input_words, target_words
 
-train_dataset = train_sequences.map(split_input_target).shuffle(buffer_size).batch(batch_size, drop_remainder=True)
-test_dataset = test_sequences.map(split_input_target).shuffle(buffer_size).batch(batch_size, drop_remainder=True)
+def build_model(embedding_dim, rnn_units, batch_size):
+    return tf.keras.Sequential([
+        tf.keras.layers.Embedding(len(vocab), embedding_dim, batch_input_shape=[batch_size, None]),
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.LSTM(rnn_units, return_sequences=True, stateful=True, recurrent_initializer="glorot_uniform"),
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.LSTM(rnn_units, return_sequences=True, stateful=True, recurrent_initializer="glorot_uniform"),
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.Dense(len(vocab))
+    ])
 
-#print("\n\n", train_dataset, test_dataset)
+def loss(labels, logits):
+    return tf.keras.losses.sparse_categorical_crossentropy(labels, logits, from_logits=True)
 
-model = tf.keras.Sequential([
-    tf.keras.layers.Embedding(len(vocab), embedding_dim, batch_input_shape=[batch_size, None]),
-    tf.keras.layers.Dropout(0.2),
-    tf.keras.layers.LSTM(rnn_units, return_sequences=True, stateful=True, recurrent_initializer="glorot_uniform"),
-    tf.keras.layers.Dropout(0.2),
-    tf.keras.layers.LSTM(rnn_units, return_sequences=True, stateful=True, recurrent_initializer="glorot_uniform"),
-    tf.keras.layers.Dropout(0.2),
-    tf.keras.layers.Dense(len(vocab))
-])
+def train_model():
+    examples_per_epoch = len(words) // SEQ_LEN
 
-print("\n\n\n")
-model.summary()
+    train_size = 0
+    while (train_size <= TRAIN_PERCENT * len(words_as_ints) - BATCH_SIZE):
+        train_size += BATCH_SIZE
+
+    train_words = words_as_ints[:train_size]
+    test_words = words_as_ints[train_size:]
+
+    train_word_dataset = tf.data.Dataset.from_tensor_slices(train_words)
+    test_word_dataset = tf.data.Dataset.from_tensor_slices(test_words)
+
+    train_sequences = train_word_dataset.batch(SEQ_LEN + 1, drop_remainder=True)
+    test_sequences = test_word_dataset.batch(SEQ_LEN + 1, drop_remainder=True)
+
+    train_dataset = train_sequences.map(split_input_target).shuffle(BUFFER_SIZE).batch(BATCH_SIZE, drop_remainder=True)
+    test_dataset = test_sequences.map(split_input_target).shuffle(BUFFER_SIZE).batch(BATCH_SIZE, drop_remainder=True)
+
+    model = build_model(EMBEDDING_DIM, RNN_UNITS, BATCH_SIZE)
+    model.summary()
+
+    for input_example_batch, target_example_batch in train_dataset.take(1):
+        example_batch_predictions = model(input_example_batch)
+        print(example_batch_predictions.shape)
+
+    example_batch_loss = loss(target_example_batch, example_batch_predictions)
+    print("Loss: ", example_batch_loss.numpy().mean())
+
+    optimizer = tf.keras.optimizers.Adam()
+    model.compile(optimizer=optimizer, loss=loss)
+    early_stop = tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=PATIENCE)
+
+    checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(filepath=get_ckpt_prefix(), save_weights_only=True)
+
+    history = model.fit(train_dataset, epochs=EPOCHS, callbacks=[checkpoint_callback, early_stop], validation_data=test_dataset)
+
+    print("Training stopped due to no improvement after %d epochs" % PATIENCE)
+
+def generate_text(model, seed):
+    seed = seed.split(" ");
+    num_generate = 1000
+    input_eval = [word2int[s] for s in seed]
+    input_eval = tf.expand_dims(input_eval, 0)
+    text_generated = []
+    temperature = 1.0
+    model.reset_states()
+
+    for i in range(num_generate):
+        predictions = model(input_eval)
+        predictions = tf.squeeze(predictions, 0)
+        predictions = predictions / temperature
+        predicted_id = tf.random.categorical(predictions, num_samples=1)[-1,0].numpy()
+        input_eval = tf.expand_dims([predicted_id], 0)
+        text_generated.append(int2word[predicted_id])
+    return "".join(text_generated)
+
+def run_model(seed):
+    model = build_model(EMBEDDING_DIM, RNN_UNITS, batch_size=1)
+    model.load_weights(tf.train.latest_checkpoint(CKPT_DIR))
+    model.build(tf.TensorShape([1, None]))
+
+    print("Generating with seed: \"" + seed + "\"\n")
+    output = seed + generate_text(model, seed)
+
+    if PRINT_TO_FILE:
+        with open(os.path.join(OUTPUT_DIR, "output" + get_time_for_file() + ".txt"), "w") as output_file:
+            output_file.write(output)
+    else:
+        print(output)
+
+run_model("thou are a")

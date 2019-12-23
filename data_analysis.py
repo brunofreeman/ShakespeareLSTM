@@ -1,8 +1,8 @@
 import os
 import re
 
-PRINT_TO_FILE = True
 MIN_COUNT = 50
+PRINT_TO_FILE = True
 
 file_count = 0
 text = ""
@@ -12,7 +12,7 @@ for file in os.listdir("./shakespeare_data"):
         text += open(os.path.join("./shakespeare_data", file)).read().lower()
 
 word_regex = "(?:[A-Za-z\']*(?:(?<!-)-(?!-))*[A-Za-z\']+)+"
-punct_regex = "|\.|\?|!|,|;|:|-|\(|\)|\[|\]|\{|\}|\'|\"|\\|\/|<|>| |\t|\n"
+punct_regex = r"|\.|\?|!|,|;|:|-|\(|\)|\[|\]|\{|\}|\'|\"|\|\/|<|>| |\t|\n"
 regex = word_regex + punct_regex
 words = re.findall(regex, text)
 word_counts = dict()
