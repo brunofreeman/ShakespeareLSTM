@@ -1,7 +1,7 @@
 .vscode/
-data_analysis.txt
-checkpoints/
+checkpoints*/
 lstm_output/
+data_analysis.txt
 
 ## Below: auto-generated Python .gitignore
 # Byte-compiled / optimized / DLL files
