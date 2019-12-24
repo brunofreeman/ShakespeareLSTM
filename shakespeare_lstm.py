@@ -1,35 +1,40 @@
 import tensorflow as tf #2.0.0
 import numpy as np
+import json
 import os
 import re
 import datetime
 
+#Set Root and Version
+ROOT = "."
+LSTM_VERSION = 1
+settings = json.load(open(os.path.join(ROOT, "version_settings", "v" + str(LSTM_VERSION) + "_settings.json")))
+
 #Data Settings
-MIN_WORD_COUNT = 50
+MIN_WORD_COUNT = settings["MIN_WORD_COUNT"]
 
 #Training Settings
-BATCH_SIZE = 64
-BUFFER_SIZE = 10000
-EMBEDDING_DIM = 256
-EPOCHS = 50
-SEQ_LEN = 200
-RNN_UNITS = 1024
-PATIENCE = 10
-TRAIN_PERCENT = 0.9
+BATCH_SIZE = settings["BATCH_SIZE"]
+BUFFER_SIZE = settings["BUFFER_SIZE"]
+EMBEDDING_DIM = settings["EMBEDDING_DIM"]
+EPOCHS = settings["EPOCHS"]
+SEQ_LEN = settings["SEQ_LEN"]
+RNN_UNITS = settings["RNN_UNITS"]
+PATIENCE = settings["PATIENCE"]
+TRAIN_PERCENT = settings["TRAIN_PERCENT"]
 
-#File Settings
-ROOT = "."
-DATA_DIR = os.path.join(ROOT, "shakespeare_data")
-CKPT_DIR = os.path.join(ROOT, "checkpoints_v1")
-OUTPUT_DIR = os.path.join(ROOT, "lstm_output")
+#File Settings 2
+DATA_DIR = os.path.join(ROOT, settings["DATA_DIR"])
+CKPT_DIR = os.path.join(ROOT, settings["CKPT_DIR"])
+OUTPUT_DIR = os.path.join(ROOT, "lstm_output", settings["OUTPUT_DIR"])
 def get_time_for_file():
     return datetime.datetime.now().strftime("_%m.%d.%y-%H:%M:%S")
 def get_ckpt_prefix():
     return os.path.join(CKPT_DIR, "ckpt" + get_time_for_file())
-PRINT_TO_FILE = True
 
 #Generation Settings
 SEED = "a great tale"
+PRINT_TO_FILE = True
 NUM_WORDS_GENERATE = 1000
 TEMPERATURE = 1.0
 
@@ -156,4 +161,4 @@ def run_model(seed):
     else:
         print(output)
 
-run_model(SEED)
+#run_model(SEED)

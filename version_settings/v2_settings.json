@@ -1,0 +1,14 @@
+{
+    "MIN_WORD_COUNT":1,
+    "BATCH_SIZE":64,
+    "BUFFER_SIZE":10000,
+    "EMBEDDING_DIM":256,
+    "EPOCHS":50,
+    "SEQ_LEN":200,
+    "RNN_UNITS":1024,
+    "PATIENCE":10,
+    "TRAIN_PERCENT":0.9,
+    "DATA_DIR":"shakespeare_data",
+    "CKPT_DIR":"checkpoints_v2",
+    "OUTPUT_DIR":"v2"
+}
