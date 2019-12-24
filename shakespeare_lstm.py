@@ -20,7 +20,7 @@ TRAIN_PERCENT = 0.9
 #File Settings
 ROOT = "."
 DATA_DIR = os.path.join(ROOT, "shakespeare_data")
-CKPT_DIR = os.path.join(ROOT, "checkpoints")
+CKPT_DIR = os.path.join(ROOT, "checkpoints_v1")
 OUTPUT_DIR = os.path.join(ROOT, "lstm_output")
 def get_time_for_file():
     return datetime.datetime.now().strftime("_%m.%d.%y-%H:%M:%S")
@@ -105,6 +105,8 @@ def train_model():
     test_dataset = test_sequences.map(split_input_target).shuffle(BUFFER_SIZE).batch(BATCH_SIZE, drop_remainder=True)
 
     model = build_model(EMBEDDING_DIM, RNN_UNITS, BATCH_SIZE)
+    model.load_weights(tf.train.latest_checkpoint(CKPT_DIR))
+
     model.summary()
 
     for input_example_batch, target_example_batch in train_dataset.take(1):
