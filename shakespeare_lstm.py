@@ -46,7 +46,7 @@ for file in os.listdir(DATA_DIR):
     if file.endswith(".txt"):
         text += open(os.path.join(DATA_DIR, file)).read().lower()
 
-regex = r"(?:[A-Za-z']*(?:(?<!-)-(?!-))*[A-Za-z']+)+" + r"|\.|\?|!|,|;|:|-|\(|\)|\[|\]|\{|\}|\'|\"|\|\/|<|>| |\t|\n" if USING_WORDS else "."
+regex = r"(?:[A-Za-z']*(?:(?<!-)-(?!-))*[A-Za-z']+)+" + r"|\.|\?|!|,|;|:|-|\(|\)|\[|\]|\{|\}|\'|\"|\|\/|<|>| |\t|\n" if USING_WORDS else r".|\n"
 units = re.findall(regex, text)
 unit_counts = dict()
 
@@ -153,13 +153,19 @@ def run_model(seed):
     model.load_weights(tf.train.latest_checkpoint(CKPT_DIR))
     model.build(tf.TensorShape([1, None]))
 
-    print("Generating with seed: \"" + seed + "\"\n")
+    print("Generating with Shakespeare LSTM v" + str(LSTM_VERSION))
+    print("Checkpoint: " + tf.train.latest_checkpoint(CKPT_DIR))
+    print("Seed: " + seed)
+
     output = seed + generate_text(model, seed)
 
     if PRINT_TO_FILE:
-        with open(os.path.join(OUTPUT_DIR, "output" + get_time_for_file() + ".txt"), "w") as output_file:
+        file_name = os.path.join(OUTPUT_DIR, "output" + get_time_for_file() + ".txt")
+        with open(file_name, "w") as output_file:
             output_file.write(output)
+        print("Generated text saved to " + file_name)
     else:
+        print("\n")
         print(output)
 
 #run_model(SEED)
