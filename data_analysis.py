@@ -32,7 +32,7 @@ for file in os.listdir(DATA_DIR):
 if USING_WORDS:
     text = text.lower()
 
-regex = r"(?:[A-Za-z']*(?:(?<!-)-(?!-))*[A-Za-z']+)+" + r"|\.|\?|!|,|;|:|-|\(|\)|\[|\]|\{|\}|\'|\"|\|\/|<|>| |\t|\n" if USING_WORDS else "."
+regex = r"(?:[A-Za-z']*(?:(?<!-)-(?!-))*[A-Za-z']+)+" + r"|\.|\?|!|,|;|:|-|\(|\)|\[|\]|\{|\}|\'|\"|\|\/|<|>| |\t|\n" if USING_WORDS else r".|\n"
 units = re.findall(regex, text)
 unit_counts = dict()
 
