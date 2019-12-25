@@ -12,7 +12,7 @@ settings = json.load(open(os.path.join(ROOT, "version_settings", "v" + str(LSTM_
 
 #Data Settings
 USING_WORDS = settings["USING_WORDS"]
-MIN_UNIT_COUNT = settings["MIN_WORD_COUNT"]
+MIN_UNIT_COUNT = settings["MIN_UNIT_COUNT"]
 
 #Training Settings
 BATCH_SIZE = settings["BATCH_SIZE"]
@@ -24,9 +24,9 @@ RNN_UNITS = settings["RNN_UNITS"]
 PATIENCE = settings["PATIENCE"]
 TRAIN_PERCENT = settings["TRAIN_PERCENT"]
 
-#File Settings 2
+#File Settings
 DATA_DIR = os.path.join(ROOT, settings["DATA_DIR"])
-CKPT_DIR = os.path.join(ROOT, settings["CKPT_DIR"])
+CKPT_DIR = os.path.join(ROOT, "checkpoinnts", settings["CKPT_DIR"])
 OUTPUT_DIR = os.path.join(ROOT, "lstm_output", settings["OUTPUT_DIR"])
 
 def get_time_for_file():
@@ -112,6 +112,8 @@ def train_model():
 
     model = build_model(EMBEDDING_DIM, RNN_UNITS, BATCH_SIZE)
     model.load_weights(tf.train.latest_checkpoint(CKPT_DIR))
+
+    print("Loaded checkpoint " + tf.train.latest_checkpoint(CKPT_DIR) + "\n")
 
     model.summary()
 
