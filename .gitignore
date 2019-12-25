@@ -1,5 +1,5 @@
 .vscode/
-checkpoints*/
+checkpoints/
 lstm_output/
 data_analysis/
 
