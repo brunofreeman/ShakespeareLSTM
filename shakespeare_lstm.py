@@ -7,8 +7,12 @@ import datetime
 
 #Set Root and Version
 ROOT = "."
-LSTM_VERSION = 1
-settings = json.load(open(os.path.join(ROOT, "version_settings", "v" + str(LSTM_VERSION) + "_settings.json")))
+LSTM_VERSION = 3
+
+def version_for_file(suffix):
+    return "v" + str(LSTM_VERSION) + "_" + suffix
+
+settings = json.load(open(os.path.join(ROOT, "version_settings", version_for_file("settings.json"))))
 
 #Data Settings
 USING_WORDS = settings["USING_WORDS"]
@@ -25,15 +29,15 @@ PATIENCE = settings["PATIENCE"]
 TRAIN_PERCENT = settings["TRAIN_PERCENT"]
 
 #File Settings
-DATA_DIR = os.path.join(ROOT, settings["DATA_DIR"])
-CKPT_DIR = os.path.join(ROOT, "checkpoints", settings["CKPT_DIR"])
-OUTPUT_DIR = os.path.join(ROOT, "lstm_output", settings["OUTPUT_DIR"])
+DATA_DIR = os.path.join(ROOT, "shakespeare_data")
+CKPT_DIR = os.path.join(ROOT, "checkpoints", version_for_file("checkpoints"))
+OUTPUT_DIR = os.path.join(ROOT, "output", version_for_file("output"))
 
-def get_time_for_file():
+def time_for_file():
     return datetime.datetime.now().strftime("_%m.%d.%y-%H.%M.%S")
 
 def get_ckpt_prefix():
-    return os.path.join(CKPT_DIR, "ckpt" + get_time_for_file())
+    return os.path.join(CKPT_DIR, "ckpt_" + version_for_file("{epoch}"))
 
 #Generation Settings
 SEED = "a great tale"
@@ -44,7 +48,10 @@ TEMPERATURE = 1.0
 text = ""
 for file in os.listdir(DATA_DIR):
     if file.endswith(".txt"):
-        text += open(os.path.join(DATA_DIR, file)).read().lower()
+        text += open(os.path.join(DATA_DIR, file)).read()
+
+if USING_WORDS:
+    text = text.lower()
 
 regex = r"(?:[A-Za-z']*(?:(?<!-)-(?!-))*[A-Za-z']+)+" + r"|\.|\?|!|,|;|:|-|\(|\)|\[|\]|\{|\}|\'|\"|\|\/|<|>| |\t|\n" if USING_WORDS else r".|\n"
 units = re.findall(regex, text)
@@ -165,7 +172,7 @@ def run_model(seed):
     output = seed + generate_text(model, seed)
 
     if PRINT_TO_FILE:
-        file_name = os.path.join(OUTPUT_DIR, "output" + get_time_for_file() + ".txt")
+        file_name = os.path.join(OUTPUT_DIR, version_for_file("output") + time_for_file() + ".txt")
         with open(file_name, "w") as output_file:
             output_file.write(output)
         print("Generated text saved to " + file_name)
