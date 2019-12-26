@@ -8,8 +8,5 @@
     "SEQ_LEN":200,
     "RNN_UNITS":1024,
     "PATIENCE":10,
-    "TRAIN_PERCENT":0.9,
-    "DATA_DIR":"shakespeare_data",
-    "CKPT_DIR":"checkpoints_v3",
-    "OUTPUT_DIR":"v3"
+    "TRAIN_PERCENT":0.9
 }
