@@ -26,7 +26,7 @@ TRAIN_PERCENT = settings["TRAIN_PERCENT"]
 
 #File Settings
 DATA_DIR = os.path.join(ROOT, settings["DATA_DIR"])
-CKPT_DIR = os.path.join(ROOT, "checkpoinnts", settings["CKPT_DIR"])
+CKPT_DIR = os.path.join(ROOT, "checkpoints", settings["CKPT_DIR"])
 OUTPUT_DIR = os.path.join(ROOT, "lstm_output", settings["OUTPUT_DIR"])
 
 def get_time_for_file():
@@ -111,9 +111,12 @@ def train_model():
     test_dataset = test_sequences.map(split_input_target).shuffle(BUFFER_SIZE).batch(BATCH_SIZE, drop_remainder=True)
 
     model = build_model(EMBEDDING_DIM, RNN_UNITS, BATCH_SIZE)
-    model.load_weights(tf.train.latest_checkpoint(CKPT_DIR))
 
-    print("Loaded checkpoint " + tf.train.latest_checkpoint(CKPT_DIR) + "\n")
+    try:
+      model.load_weights(tf.train.latest_checkpoint(CKPT_DIR))
+      print("Loaded checkpoint " + tf.train.latest_checkpoint(CKPT_DIR) + "\n")
+    except:
+      print("No checkpoint loaded")
 
     model.summary()
 
