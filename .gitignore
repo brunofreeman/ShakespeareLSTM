@@ -1,7 +1,8 @@
 .vscode/
-checkpoints/
-lstm_output/
-data_analysis/
+checkpoints/*/*
+output/*/*
+data_analysis/*
+training_logs/
 
 ## Below: auto-generated Python .gitignore
 # Byte-compiled / optimized / DLL files
