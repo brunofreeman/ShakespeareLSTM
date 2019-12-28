@@ -161,23 +161,26 @@ def generate_text(model, seed):
     return "".join(text_generated)
 
 def run_model(seed):
-    model = build_model(EMBEDDING_DIM, RNN_UNITS, batch_size=1)
-    model.load_weights(tf.train.latest_checkpoint(CKPT_DIR))
-    model.build(tf.TensorShape([1, None]))
+    try:
+        model = build_model(EMBEDDING_DIM, RNN_UNITS, batch_size=1)
+        model.load_weights(tf.train.latest_checkpoint(CKPT_DIR))
+        model.build(tf.TensorShape([1, None]))
 
-    print("Generating with Shakespeare LSTM v" + str(LSTM_VERSION))
-    print("Checkpoint: " + tf.train.latest_checkpoint(CKPT_DIR))
-    print("Seed: " + seed)
+        print("Generating with Shakespeare LSTM v" + str(LSTM_VERSION))
+        print("Checkpoint: " + tf.train.latest_checkpoint(CKPT_DIR))
+        print("Seed: " + seed)
 
-    output = seed + generate_text(model, seed)
+        output = seed + generate_text(model, seed)
 
-    if PRINT_TO_FILE:
-        file_name = os.path.join(OUTPUT_DIR, version_for_file("output") + time_for_file() + ".txt")
-        with open(file_name, "w") as output_file:
-            output_file.write(output)
-        print("Generated text saved to " + file_name)
-    else:
-        print("\n")
-        print(output)
+        if PRINT_TO_FILE:
+            file_name = os.path.join(OUTPUT_DIR, version_for_file("output") + time_for_file() + ".txt")
+            with open(file_name, "w") as output_file:
+                output_file.write(output)
+            print("Generated text saved to " + file_name)
+        else:
+            print("\n")
+            print(output)
+    except:
+        print("No checkpoint was found to run model with")
 
 #run_model(SEED)
