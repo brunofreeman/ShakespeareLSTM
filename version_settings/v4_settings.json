@@ -1,0 +1,12 @@
+{
+    "USING_WORDS":false,
+    "MIN_UNIT_COUNT":1,
+    "BATCH_SIZE":64,
+    "BUFFER_SIZE":10000,
+    "EMBEDDING_DIM":256,
+    "EPOCHS":500,
+    "SEQ_LEN":200,
+    "RNN_UNITS":4096,
+    "PATIENCE":25,
+    "TRAIN_PERCENT":0.9
+}
