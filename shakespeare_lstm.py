@@ -7,7 +7,7 @@ import datetime
 
 #Set Root and Version
 ROOT = "."
-LSTM_VERSION = 3
+LSTM_VERSION = 2
 
 def version_for_file(suffix):
     return "v" + str(LSTM_VERSION) + "_" + suffix
@@ -140,7 +140,14 @@ def train_model():
 
     checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(filepath=get_ckpt_prefix(), save_weights_only=True)
 
-    history = model.fit(train_dataset, epochs=EPOCHS, callbacks=[checkpoint_callback, early_stop], validation_data=test_dataset)
+    try:
+      initial_epoch = int(tf.train.latest_checkpoint(CKPT_DIR).split("_")[-1]) #relies on current file formatting
+    except:
+      initial_epoch = 0
+
+    history = model.fit(train_dataset, epochs=EPOCHS, initial_epoch=initial_epoch, callbacks=[checkpoint_callback, early_stop], validation_data=test_dataset)
+
+    history = model.fit(train_dataset, epochs=EPOCHS, initial_epoch=initial_epoch, callbacks=[checkpoint_callback, early_stop], validation_data=test_dataset)
 
     print("Training stopped due to no improvement after %d epochs" % PATIENCE)
 
@@ -158,6 +165,7 @@ def generate_text(model, seed):
         predicted_id = tf.random.categorical(predictions, num_samples=1)[-1,0].numpy()
         input_eval = tf.expand_dims([predicted_id], 0)
         text_generated.append(int2unit[predicted_id])
+
     return "".join(text_generated)
 
 def run_model(seed):
@@ -183,4 +191,4 @@ def run_model(seed):
     except:
         print("No checkpoint was found to run model with")
 
-#run_model(SEED)
+run_model(SEED)
