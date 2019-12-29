@@ -4,10 +4,11 @@ import json
 import os
 import re
 import datetime
+import txt_to_pdf as ttp
 
 #Set Root and Version
 ROOT = "."
-LSTM_VERSION = 2
+LSTM_VERSION = 3
 
 def version_for_file(suffix):
     return "v" + str(LSTM_VERSION) + "_" + suffix
@@ -42,6 +43,7 @@ def get_ckpt_prefix():
 #Generation Settings
 SEED = "a great tale"
 PRINT_TO_FILE = True
+ALSO_PRINT_TO_PDF = True
 NUM_UNITS_GENERATE = 1000
 TEMPERATURE = 1.0
 
@@ -184,6 +186,9 @@ def run_model(seed):
             file_name = os.path.join(OUTPUT_DIR, version_for_file("output") + time_for_file() + ".txt")
             with open(file_name, "w") as output_file:
                 output_file.write(output)
+            if ALSO_PRINT_TO_PDF:
+                ttp.txt_to_pdf(file_name)
+
             print("Generated text saved to " + file_name)
         else:
             print("\n")
