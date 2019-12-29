@@ -8,15 +8,15 @@ OUTPUT_DIR_2 = "pdf_output"
 
 def txt_to_pdf(file_path):
     try:
-        text = open(file_path).read().split("\n")
+        text = open(file_path).read().replace("\t", "\t\t").split("\n") #a single tab doesn't work well with this font
         file_name = file_path.split(os.path.sep)[-1][:-4] #relies on current file naming convention
     except:
         print("Invalid file path provided to txt_to_pdf()")
         sys.exit()
 
     pdf = FPDF()
+    pdf.set_margins(20, 20, 20)
     pdf.add_page()
-    pdf.set_xy(0, 0)
     pdf.set_font("courier", "B", 13.0)
     for line in text:
         pdf.cell(ln=1, h=5.0, align="L", w=0, txt=line, border=0)
