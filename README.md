@@ -4,7 +4,7 @@ The text data used for this project was retrived from [textfiles.com](http://www
 
 [This tutorial](https://towardsdatascience.com/generating-text-with-tensorflow-2-0-6a65c7bdc568) was very helpful.
 
-The directory structure needed for saving files is as so:
+The following is the directory structure needed for saving files:
 
 ```
 ShakespeareLSTM
