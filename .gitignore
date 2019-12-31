@@ -1,7 +1,8 @@
 .vscode/
-checkpoints/*/*
-output/*/*
-data_analysis/*
+checkpoints/*
+!checkpoints/v3_checkpoints/
+output/
+data_analysis/
 training_logs/
 
 ## Below: auto-generated Python .gitignore
