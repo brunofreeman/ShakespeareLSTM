@@ -11,7 +11,7 @@ def txt_to_pdf(file_path):
         text = open(file_path).read().replace("\t", "\t\t").split("\n") #a single tab doesn't work well with this font
         file_name = file_path.split(os.path.sep)[-1][:-4] #relies on current file naming convention
     except:
-        print("Invalid file path provided to txt_to_pdf()")
+        print("Invalid file path provided to txt_to_pdf(). Exiting...")
         sys.exit()
 
     pdf = FPDF()
@@ -24,7 +24,7 @@ def txt_to_pdf(file_path):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Provide path to text file relative to current path as program argument")
+        print("Provide path to text file relative to current path as program argument. Exiting...")
         sys.exit()
 
     file_to_convert = sys.argv[1]
