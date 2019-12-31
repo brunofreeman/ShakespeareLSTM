@@ -1,5 +1,6 @@
 import tensorflow as tf #2.0.0
 import numpy as np
+import sys
 import json
 import os
 import re
@@ -8,7 +9,11 @@ import txt_to_pdf as ttp
 
 #Set Root and Version
 ROOT = "."
-LSTM_VERSION = 3
+try:
+    LSTM_VERSION = int(sys.argv[1])
+except:
+    print("Enter the LSTM version number as a command line argument. Exiting...")
+    sys.exit()
 
 def version_for_file(suffix):
     return "v" + str(LSTM_VERSION) + "_" + suffix
